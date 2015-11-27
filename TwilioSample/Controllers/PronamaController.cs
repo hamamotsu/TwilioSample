@@ -8,7 +8,7 @@ using Twilio.TwiML.Mvc;
 
 namespace TwilioSample.Controllers
 {
-    public class PronamaController : TwilioController
+    public class TwilioSampleController : TwilioController
     {
         // GET: Pronama
         public ActionResult Index()
@@ -23,13 +23,7 @@ namespace TwilioSample.Controllers
         {
             
             var response = new TwilioResponse();
-            //if (!string.IsNullOrEmpty(From))
-            //{
-            //    var msg = "From is ";
-            //    msg = (From == "+819012345678") ? msg += "TwilioUser" : msg += From;
 
-            //    response.Say(msg);
-            //}
             var message = @"プログラミング生放送福岡にご参加いただきありがとうございます。５秒間のメッセージを録音します。";
             response.Say(message, new { voice = "alice", language = "ja-JP" });
 
@@ -43,7 +37,7 @@ namespace TwilioSample.Controllers
 
             response.BeginGather(new { numDigits = 1, action = actionUrl, method = "POST", finishOnKey = "#" })
                 .Say("キーを入力してください。", new { voice = "alice", language = "ja-JP" })
-                .Play("https://pronamademo.blob.core.windows.net/sound/snowhalation.mp3")
+                .Play("https://hogehoge.blob.core.windows.net/sound/snowhalation.mp3")
                 .Pause(10)
                 .EndGather();
 
@@ -58,7 +52,7 @@ namespace TwilioSample.Controllers
             {
                 case "1":
                     response.Say("5秒間の録音を行います。", new { voice = "alice", language = "ja-JP" });
-                    response.Record(new { maxLength = 5, action = "http://hama-nodered.eu-gb.mybluemix.net/pronama" });
+                    response.Record(new { maxLength = 5, action = "http://hogehoge.eu-gb.mybluemix.net/pronama" });
                     break;
 
                 case "10":
@@ -67,6 +61,47 @@ namespace TwilioSample.Controllers
                 default:
                     break;
             }
+            return TwiML(response);
+        }
+
+        public ActionResult CallBound(string From, string To, string CallSid, string AnsweredBy)
+        {
+            var response = new TwilioResponse();
+
+            var msg = "この電話は、Twilioから";
+            if (!string.IsNullOrEmpty(To))
+            {
+                msg = (To == "+819012345678") ? msg += "あなたの携帯電話" : msg += "電話番号が" + From;
+            }
+            else
+            {
+                msg += "発信先は不明な番号";
+            }
+            msg += "へのお電話です。";
+            response.Say(msg, new { voice = "alice", language = "ja-JP" });
+
+            response.Pause(2);
+
+            if (!string.IsNullOrEmpty(AnsweredBy))
+            {
+                response.Say(String.Format("このAnsweredByパラメータの値は、{0}です。", AnsweredBy), new { voice = "alice", language = "ja-JP" });
+                response.Pause(2);
+                if (AnsweredBy == "machine")
+                {
+                    response.Say("この電話は機械によって着信しました。", new { voice = "alice", language = "ja-JP" });
+                }
+                if (AnsweredBy == "human")
+                {
+                    response.Say("この電話は人間によって着信しました。", new { voice = "alice", language = "ja-JP" });
+                }
+                response.Pause(2);
+            }
+            else
+            {
+                response.Say("機械の判定パラメータは存在しませんでした。", new { voice = "alice", language = "ja-JP" });
+            }
+
+            response.Say("お電話ありがとうございました。", new { voice = "alice", language = "ja-JP" });
             return TwiML(response);
         }
     }
